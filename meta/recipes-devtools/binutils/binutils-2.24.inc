@@ -32,6 +32,7 @@ SRC_URI = "\
      file://replace_macros_with_static_inline.patch \
      file://0001-Fix-MMIX-build-breakage-from-bfd_set_section_vma-cha.patch \
      file://binutils-uninitialised-warning.patch \
+     file://binutils-2.24-i386-logical-not.patch \
      "
 
 SRC_URI[md5sum] = "e0f71a7b2ddab0f8612336ac81d9636b"
