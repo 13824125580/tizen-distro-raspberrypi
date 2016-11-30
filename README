@@ -27,6 +27,15 @@ $ gedit conf/local.conf
 
 Add this line: MACHINE ??= "raspberrypi2" for RaspberryPi2 or MACHINE ??= "raspberrypi3" for RaspberryPi3 
 
+If your are building on a host machine with GCC 5.x, please add at the end of this file the following lines:
+
+# GCC 5.x support
+CPPFLAGS_append_pn-ncurses-native = " -P"
+CPPFLAGS_append_pn-binutils-native = " -P"
+CPPFLAGS_append_pn-binutils = " -P"
+CPPFLAGS_append_pn-subversion = " -P"
+CPPFLAGS_append_pn-subversion-native = " -P"
+
 Check that your conf/bblayers.conf looks like this:
 
 # LAYER_CONF_VERSION is increased each time build/conf/bblayers.conf
