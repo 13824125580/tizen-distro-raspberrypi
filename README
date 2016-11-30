@@ -1,50 +1,68 @@
-About tizen-distro
-==================
+About Tizen For RaspberryPi
+===========================
 
-tizen-distro is a combination of several different components in a
-single repository:
-- bitbake
-- openembedded-core
-- meta-openembedded
-- meta-qt5
-- meta-tizen
+Step-By-Step Process for Building a Tizen Image for RaspberryPi 2/3:
 
-The top-level directory comes from openembedded-core, everything else
-is in its own sub-directory. tizen-distro gets updated by copying
-importing patches from the component's repostories. Please submit
-patches against those instead of tizen-distro.
 
-Updating tizen-distro
-=====================
+1) Create a Local Copy of tizen-distro:
 
-Everyone with a copy of the tizen-distro repository can use
-scripts/combo-layer to import patches from the components. That works
-because the "last_revision" property which gets changed after each
-import gets committed to the combined repostory.
+$ git clone https://github.com/MCherifiOSS/tizen-distro-raspberrypi tizen-distro
+$ cd tizen-distro
+$ git checkout 3d_accel_vc4
 
-First, copy conf/combo-layer-local-sample.conf into
-conf/combo-layer-local.conf and set the paths for each component
-repository to a suitable location.
+2) Add RaspberryPi 2 BSP Meta Repository:
 
-Then run:
-- "scripts/combo-layer init" (only once)
-- "scripts/combo-layer update <component>" where <component> is either one of
-  components above (for updating just that one) or empty (for updating all)
+$ git clone https://github.com/MCherifiOSS/meta-raspberrypi-tizen meta-raspberrypi
+$ cd meta-raspberrypi
+$ git checkout 3d_accel_vc4
+$ cd ..
 
-Branching tizen-distro
-======================
+3) Initialize the Environment to Prepare for Build:
 
-Each branch in tizen-distro tracks one branch in each component. To
-create a new branch:
-- checkout a new branch in tizen-component
-- change the "branch" properties in conf/combo-layer.conf
-- change the branch part in the last_revision sections
-- commit
-- continue as before
+source ./tizen-common-init-build-env build-rpi
 
-This works best if the last imported revision from each component is
-the branching point of that component. Ensure that by updating before
-the components branch. If it is too late, either select patches
-interactively or import too many patches and then drop unwanted ones
-via "git rebase" or "git reset --hard". Remember to keep
-"last_revision" correct when doing that.
+4) Modify Config Files to Point to Build for RaspberryPi 2/3:
+
+$ gedit conf/local.conf
+
+Add this line: MACHINE ??= "raspberrypi2" for RaspberryPi2 or MACHINE ??= "raspberrypi3" for RaspberryPi3 
+
+Check that your conf/bblayers.conf looks like this:
+
+# LAYER_CONF_VERSION is increased each time build/conf/bblayers.conf
+# changes incompatibly
+LCONF_VERSION = "5"
+
+BBPATH = "${TOPDIR}"
+BBFILES ?= ""
+
+BBLAYERS ?= " \
+  /home/mcherifi/Projects/Tizen/Yocto/tizen-distro/meta \
+  /home/mcherifi/Projects/Tizen/Yocto/tizen-distro/meta-raspberrypi \
+  /home/mcherifi/Projects/Tizen/Yocto/tizen-distro/meta-openembedded/meta-oe \
+  /home/mcherifi/Projects/Tizen/Yocto/tizen-distro/meta-openembedded/meta-multimedia \
+  /home/mcherifi/Projects/Tizen/Yocto/tizen-distro/meta-openembedded/meta-ruby \
+  /home/mcherifi/Projects/Tizen/Yocto/tizen-distro/meta-openembedded/meta-systemd \
+  /home/mcherifi/Projects/Tizen/Yocto/tizen-distro/meta-openembedded/meta-gnome \
+  /home/mcherifi/Projects/Tizen/Yocto/tizen-distro/meta-tizen/meta-tizen-adaptation/meta \
+  /home/mcherifi/Projects/Tizen/Yocto/tizen-distro/meta-tizen/meta-tizen-adaptation/meta-oe \
+  /home/mcherifi/Projects/Tizen/Yocto/tizen-distro/meta-tizen/meta-tizen-common-base \
+  /home/mcherifi/Projects/Tizen/Yocto/tizen-distro/meta-tizen/meta-tizen-common-share \
+  /home/mcherifi/Projects/Tizen/Yocto/tizen-distro/meta-tizen/meta-tizen-common-devtools \
+  /home/mcherifi/Projects/Tizen/Yocto/tizen-distro/meta-tizen/meta-tizen-common-demo \
+"
+
+BBLAYERS_NON_REMOVABLE ?= " \
+  /home/mcherifi/Projects/Tizen/Yocto/tizen-distro/meta \
+  /home/mcherifi/Projects/Tizen/Yocto/tizen-distro/meta-openembedded/meta-oe \
+  /home/mcherifi/Projects/Tizen/Yocto/tizen-distro/meta-openembedded/meta-multimedia \
+  /home/mcherifi/Projects/Tizen/Yocto/tizen-distro/meta-openembedded/meta-ruby \
+  /home/mcherifi/Projects/Tizen/Yocto/tizen-distro/meta-openembedded/meta-systemd \
+  /home/mcherifi/Projects/Tizen/Yocto/tizen-distro/meta-openembedded/meta-gnome \
+  /home/mcherifi/Projects/Tizen/Yocto/tizen-distro/meta-tizen/meta-tizen-adaptation-oe-core \
+  /home/mcherifi/Projects/Tizen/Yocto/tizen-distro/meta-tizen/meta-tizen-adaptation-meta-oe \
+  /home/mcherifi/Projects/Tizen/Yocto/tizen-distro/meta-tizen/meta-tizen-common-base \
+  "
+
+5) Start build:
+$ bitbake tizen-common-core-image-crosswalk-dev
